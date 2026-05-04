@@ -1,0 +1,39 @@
+manifestVersion: 1
+id: journiv
+category: files
+name: Journiv
+version: "0.1.0-beta.22"
+tagline: Your private, self-hosted journal
+description: >-
+  Journiv is a self-hosted private journal with a clean and minimal UI. It features comprehensive journaling
+  capabilities including mood tracking, prompt-based journaling, media uploads, analytics, and advanced search.
+
+
+  Key Features:
+
+  - Private Journaling: Write and organize your personal journal entries with rich text and media support
+
+  - Mood Tracking: Log your daily mood alongside journal entries for emotional insights
+
+  - Prompt-based Journaling: Get writing prompts to spark reflection and creativity
+
+  - Media Uploads: Attach photos and videos to your journal entries
+
+  - Analytics: Gain insights into your journaling habits and mood patterns over time
+
+  - Advanced Search: Quickly find any journal entry with powerful full-text search
+
+  - OIDC Support: Integrate with Pocket-ID, Keycloak, Authentik, and other OIDC providers
+releaseNotes: ""
+developer: Journiv
+website: https://journiv.com
+dependencies: []
+repo: https://github.com/journiv/journiv-app
+support: https://github.com/journiv/journiv-app/issues
+port: 8243
+gallery: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+submitter: Oni-giri
+submission: https://github.com/Oni-giri/umbrel-apps/pull/1

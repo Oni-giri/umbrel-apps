@@ -1,0 +1,79 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: journiv_server_1
+      APP_PORT: 8000
+      PROXY_AUTH_ADD: "false"
+
+  server:
+    image: swalabtech/journiv-app:latest@sha256:a82d2fb062044ddeb6f17bce26b52b0357e1be3246b1ed837812395f5ddecaf1
+    restart: on-failure
+    depends_on:
+      - valkey
+    environment:
+      SECRET_KEY: ${APP_SEED}
+      DOMAIN_NAME: ${DEVICE_DOMAIN_NAME}
+      DB_DRIVER: sqlite
+      DATABASE_URL: sqlite:////data/journiv.db
+      REDIS_URL: redis://journiv_valkey_1:6379/0
+      CELERY_BROKER_URL: redis://journiv_valkey_1:6379/0
+      CELERY_RESULT_BACKEND: redis://journiv_valkey_1:6379/0
+      RATE_LIMIT_STORAGE_URI: redis://journiv_valkey_1:6379/1
+      SERVICE_ROLE: app
+      ENVIRONMENT: production
+    volumes:
+      - ${APP_DATA_DIR}/data:/data
+
+  valkey:
+    image: valkey/valkey:9.0-alpine@sha256:e1095c6c76ee982cb2d1e07edbb7fb2a53606630a1d810d5a47c9f646b708bf5
+    restart: on-failure
+    volumes:
+      - ${APP_DATA_DIR}/data/valkey:/data
+
+  celery-worker:
+    image: swalabtech/journiv-app:latest@sha256:a82d2fb062044ddeb6f17bce26b52b0357e1be3246b1ed837812395f5ddecaf1
+    restart: on-failure
+    depends_on:
+      - valkey
+    command: >
+      celery -A app.core.celery_app worker
+      --loglevel=info
+      --concurrency=1
+      --max-memory-per-child=300000
+      --max-tasks-per-child=200
+    environment:
+      SECRET_KEY: ${APP_SEED}
+      DB_DRIVER: sqlite
+      DATABASE_URL: sqlite:////data/journiv.db
+      REDIS_URL: redis://journiv_valkey_1:6379/0
+      CELERY_BROKER_URL: redis://journiv_valkey_1:6379/0
+      CELERY_RESULT_BACKEND: redis://journiv_valkey_1:6379/0
+      SERVICE_ROLE: celery-worker
+      ENVIRONMENT: production
+    volumes:
+      - ${APP_DATA_DIR}/data:/data
+
+  celery-beat:
+    image: swalabtech/journiv-app:latest@sha256:a82d2fb062044ddeb6f17bce26b52b0357e1be3246b1ed837812395f5ddecaf1
+    restart: on-failure
+    depends_on:
+      - valkey
+    command: >
+      celery -A app.core.celery_app beat
+      --loglevel=info
+      --scheduler redbeat.RedBeatScheduler
+      --pidfile=/tmp/celerybeat.pid
+    environment:
+      SECRET_KEY: ${APP_SEED}
+      DB_DRIVER: sqlite
+      DATABASE_URL: sqlite:////data/journiv.db
+      REDIS_URL: redis://journiv_valkey_1:6379/0
+      CELERY_BROKER_URL: redis://journiv_valkey_1:6379/0
+      CELERY_RESULT_BACKEND: redis://journiv_valkey_1:6379/0
+      REDBEAT_REDIS_URL: redis://journiv_valkey_1:6379/2
+      SERVICE_ROLE: celery-beat
+      ENVIRONMENT: production
+    volumes:
+      - ${APP_DATA_DIR}/data:/data
